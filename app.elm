@@ -22,15 +22,17 @@ type alias Model =
 view : Address action -> Model -> Html
 view action model =
   div
-    []
-    [ senatorsTable model.senators ]
+    [ class "container-fluid" ]
+    [ div [ class "col-xs-6" ] [ h1 [] [ text "Your team" ]]
+    , div [ class "col-xs-6" ] [ senatorsTable model.senators ]
+    ]
 
 
 senatorsTable : (List Senator) -> Html
 senatorsTable senators =
   div
     []
-    [ h1 [] [ text "All the senators" ]
+    [ h1 [] [ text "All available" ]
     , table
         [ classList
             [ ("table", True)
