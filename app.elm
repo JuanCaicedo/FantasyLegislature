@@ -2,6 +2,7 @@ module FantasySenate where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import Http
 import StartApp
 import Json.Decode as Json exposing ((:=))
@@ -13,7 +14,12 @@ import Task exposing (Task)
 
 type Action
   = PopulateAvailableSenators (Result Http.Error (List Senator))
+  | ToggleSenator (Destination)
 
+
+type Destination
+  = Available (Senator)
+  | Selected (Senator)
 
 type alias Model =
   { selectedSenators: List Senator
@@ -21,19 +27,19 @@ type alias Model =
   }
 
 
-view : Address action -> Model -> Html
-view action model =
+view : Address Action -> Model -> Html
+view address model =
   div
     [ class "container-fluid" ]
     [ div [ class "col-xs-6" ] [ h1 [] [ text "Your team" ]
-                               , senatorsTable model.selectedSenators ]
+                               , senatorsTable address model.selectedSenators ]
     , div [ class "col-xs-6" ] [ h1 [] [ text "Available" ]
-                               , senatorsTable model.availableSenators ]
+                               , senatorsTable address model.availableSenators]
     ]
 
 
-senatorsTable : (List Senator) -> Html
-senatorsTable senators =
+senatorsTable : Signal.Address Action -> (List Senator) -> Html
+senatorsTable address senators =
   div
     []
     [ table
@@ -45,8 +51,7 @@ senatorsTable senators =
         ]
         [ tbody
             []
-            ( senatorsHeader :: (List.map senatorListItem senators) )
-
+            ( senatorsHeader :: (List.map (senatorListItem address) senators) )
         ]
     ]
 
@@ -60,10 +65,10 @@ senatorsHeader =
     ]
 
 
-senatorListItem : Senator -> Html
-senatorListItem senator =
+senatorListItem : Signal.Address Action -> Senator -> Html
+senatorListItem address senator =
   tr
-    []
+    [ onClick address (ToggleSenator (Selected senator)) ]
     [ td [] [ text senator.firstName ]
     , td [] [ text senator.lastName ]
     ]
@@ -80,6 +85,13 @@ update msg model =
         Err error ->
           ({ model | availableSenators = [] }
           , Effects.none)
+    ToggleSenator destination ->
+       case destination of
+         Available senator ->
+           ( model, Effects.none)
+         Selected senator ->
+           ({ model | selectedSenators = senator :: model.selectedSenators }
+           , Effects.none)
 
 
 initialModel : Model
