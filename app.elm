@@ -30,7 +30,7 @@ view action model =
 
 
 senatorListItem senator =
-  li [] [ text (senator.firstName ++ senator.lastName) ]
+  li [] [ text (senator.firstName ++ " " ++ senator.lastName) ]
 
 
 update : Action -> Model -> ( Model, Effects Action)
@@ -50,7 +50,16 @@ update msg model =
 
 initialModel : Model
 initialModel =
-  { senators = [] }
+  { senators =
+      [
+       { firstName = "Juan"
+       , lastName = "Caicedo"
+       }
+      ,{ firstName = "Carson"
+       , lastName = "Banov"
+       }
+      ]
+  }
 
 getSenators :  Effects Action
 getSenators =
