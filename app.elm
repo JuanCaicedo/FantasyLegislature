@@ -14,7 +14,7 @@ import Task exposing (Task)
 
 type Action
   = PopulateAvailableSenators (Result Http.Error (List Senator))
-  | ToggleSenator Destination (Senator)
+  | ToggleSenator Destination Senator
 
 
 type Destination
@@ -68,7 +68,7 @@ senatorsHeader =
 senatorListItem : Signal.Address Action -> Destination -> Senator -> Html
 senatorListItem address destination senator =
   tr
-    [ onClick address (ToggleSenator (destination) (senator))]
+    [ onClick address (ToggleSenator destination senator)]
     [ td [] [ text senator.firstName ]
     , td [] [ text senator.lastName ]
     ]
