@@ -12,19 +12,23 @@ import Task exposing (Task)
 
 
 type Action
-  = DisplaySenators (Result Http.Error (List Senator))
+  = PopulateAvailableSenators (Result Http.Error (List Senator))
 
 
 type alias Model =
-  { senators: List Senator }
+  { selectedSenators: List Senator
+  , availableSenators: List Senator
+  }
 
 
 view : Address action -> Model -> Html
 view action model =
   div
     [ class "container-fluid" ]
-    [ div [ class "col-xs-6" ] [ h1 [] [ text "Your team" ]]
-    , div [ class "col-xs-6" ] [ senatorsTable model.senators ]
+    [ div [ class "col-xs-6" ] [ h1 [] [ text "Your team" ]
+                               , senatorsTable model.selectedSenators ]
+    , div [ class "col-xs-6" ] [ h1 [] [ text "Available" ]
+                               , senatorsTable model.availableSenators ]
     ]
 
 
@@ -32,11 +36,11 @@ senatorsTable : (List Senator) -> Html
 senatorsTable senators =
   div
     []
-    [ h1 [] [ text "All available" ]
-    , table
+    [ table
         [ classList
             [ ("table", True)
             , ("table-striped", True)
+            , ("table-bordered", True)
             ]
         ]
         [ tbody
@@ -68,25 +72,19 @@ senatorListItem senator =
 update : Action -> Model -> ( Model, Effects Action)
 update msg model =
   case msg of
-    DisplaySenators result ->
+    PopulateAvailableSenators result ->
       case result of
         Ok senators ->
-          ({ model | senators = senators }
+          ({ model | availableSenators = senators }
           , Effects.none)
         Err error ->
-          ({ model |
-               senators =
-                 [{ firstName = "error"
-                  , lastName = "error"
-                  }
-                 ]
-           }
+          ({ model | availableSenators = [] }
           , Effects.none)
 
 
 initialModel : Model
 initialModel =
-  { senators =
+  { selectedSenators =
       [
        { firstName = "Juan"
        , lastName = "Caicedo"
@@ -95,6 +93,7 @@ initialModel =
        , lastName = "Banov"
        }
       ]
+  , availableSenators = []
   }
 
 
@@ -102,7 +101,7 @@ getSenators :  Effects Action
 getSenators =
   Http.get senatorsDecoder senatorsUrl
       |> Task.toResult
-      |> Task.map DisplaySenators
+      |> Task.map PopulateAvailableSenators
       |> Effects.task
 
 
