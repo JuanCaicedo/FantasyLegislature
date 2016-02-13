@@ -22,7 +22,7 @@ view : Address action -> Model -> Html
 view action model =
   div
     []
-    [ h1 [] [ text "test" ]
+    [ h1 [] [ text "All the senators" ]
     , table
         [ classList
             [ ("table", True)
@@ -31,8 +31,16 @@ view action model =
         ]
         [ tbody
             []
-            (List.map senatorListItem model.senators )
+            ( senatorsHeader :: (List.map senatorListItem model.senators ))
         ]
+    ]
+
+senatorsHeader : Html
+senatorsHeader =
+  tr
+    []
+    [ th [] [ text "First Name" ]
+    , th [] [ text "Last Name" ]
     ]
 
 senatorListItem : Senator -> Html
@@ -90,7 +98,8 @@ senators =
 senatorsUrl : String
 senatorsUrl =
   Http.url "https://congress.api.sunlightfoundation.com/legislators"
-      [ ("apikey", "d6ef0d61cbd241bc9d89109e4f70e128") ]
+      [ ("apikey", "d6ef0d61cbd241bc9d89109e4f70e128")
+      , ("per_page", "all") ]
 
 app: StartApp.App Model
 app =
