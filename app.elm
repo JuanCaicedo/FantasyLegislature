@@ -22,6 +22,12 @@ view : Address action -> Model -> Html
 view action model =
   div
     []
+    [ senatorsTable model.senators ]
+
+senatorsTable : (List Senator) -> Html
+senatorsTable senators =
+  div
+    []
     [ h1 [] [ text "All the senators" ]
     , table
         [ classList
@@ -31,9 +37,10 @@ view action model =
         ]
         [ tbody
             []
-            ( senatorsHeader :: (List.map senatorListItem model.senators ))
+            ( senatorsHeader :: (List.map senatorListItem senators ))
         ]
     ]
+
 
 senatorsHeader : Html
 senatorsHeader =
@@ -78,15 +85,15 @@ initialModel =
 
 getSenators :  Effects Action
 getSenators =
-  Http.get senators senatorsUrl
+  Http.get senatorsDecoder senatorsUrl
       |> Task.toResult
       |> Task.map DisplaySenators
       |> Effects.task
 
 
 type alias Senator = { firstName: String, lastName: String }
-senators : Json.Decoder (List Senator)
-senators =
+senatorsDecoder : Json.Decoder (List Senator)
+senatorsDecoder =
   let senator =
     Json.object2 Senator
           ("first_name" := Json.string)
