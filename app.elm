@@ -10,6 +10,7 @@ import Signal exposing (Address)
 import List
 import Task exposing (Task)
 
+
 type Action
   = DisplaySenators (Result Http.Error (List Senator))
 
@@ -23,6 +24,7 @@ view action model =
   div
     []
     [ senatorsTable model.senators ]
+
 
 senatorsTable : (List Senator) -> Html
 senatorsTable senators =
@@ -50,6 +52,7 @@ senatorsHeader =
     , th [] [ text "Last Name" ]
     ]
 
+
 senatorListItem : Senator -> Html
 senatorListItem senator =
   tr
@@ -70,6 +73,7 @@ update msg model =
         Err error ->
           ({ model | senators = [{firstName="error", lastName="error"}]}, Effects.none)
 
+
 initialModel : Model
 initialModel =
   { senators =
@@ -82,6 +86,7 @@ initialModel =
        }
       ]
   }
+
 
 getSenators :  Effects Action
 getSenators =
@@ -108,6 +113,7 @@ senatorsUrl =
       [ ("apikey", "d6ef0d61cbd241bc9d89109e4f70e128")
       , ("per_page", "all") ]
 
+
 app: StartApp.App Model
 app =
   StartApp.start
@@ -116,6 +122,7 @@ app =
     , view = view
     , inputs = []
     }
+
 
 main : Signal Html
 main =
