@@ -13,8 +13,8 @@ import Task exposing (Task)
 
 
 type Action
-  = PopulateAvailableSenators (Result Http.Error (List Senator))
-  | ToggleSenator Destination Senator
+  = PopulateAvailableLegislators (Result Http.Error (List Legislator))
+  | ToggleLegislator Destination Legislator
 
 
 type Destination
@@ -22,8 +22,8 @@ type Destination
   | Selected
 
 type alias Model =
-  { selectedSenators: List Senator
-  , availableSenators: List Senator
+  { selectedLegislators: List Legislator
+  , availableLegislators: List Legislator
   }
 
 
@@ -32,14 +32,14 @@ view address model =
   div
     [ class "container-fluid" ]
     [ div [ class "col-xs-6" ] [ h1 [] [ text "Your team" ]
-                               , senatorsTable address Available model.selectedSenators ]
+                               , legislatorsTable address Available model.selectedLegislators ]
     , div [ class "col-xs-6" ] [ h1 [] [ text "Available" ]
-                               , senatorsTable address Selected model.availableSenators]
+                               , legislatorsTable address Selected model.availableLegislators]
     ]
 
 
-senatorsTable : Signal.Address Action -> Destination -> (List Senator) -> Html
-senatorsTable address destination senators =
+legislatorsTable : Signal.Address Action -> Destination -> (List Legislator) -> Html
+legislatorsTable address destination legislators =
   div
     []
     [ table
@@ -51,13 +51,13 @@ senatorsTable address destination senators =
         ]
         [ tbody
             []
-            ( senatorsHeader :: (List.map (senatorListItem address destination) senators) )
+            ( legislatorsHeader :: (List.map (legislatorListItem address destination) legislators) )
         ]
     ]
 
 
-senatorsHeader : Html
-senatorsHeader =
+legislatorsHeader : Html
+legislatorsHeader =
   tr
     []
     [ th [] [ text "First Name" ]
@@ -65,47 +65,47 @@ senatorsHeader =
     ]
 
 
-senatorListItem : Signal.Address Action -> Destination -> Senator -> Html
-senatorListItem address destination senator =
+legislatorListItem : Signal.Address Action -> Destination -> Legislator -> Html
+legislatorListItem address destination legislator =
   tr
-    [ onClick address (ToggleSenator destination senator)]
-    [ td [] [ text senator.firstName ]
-    , td [] [ text senator.lastName ]
+    [ onClick address (ToggleLegislator destination legislator)]
+    [ td [] [ text legislator.firstName ]
+    , td [] [ text legislator.lastName ]
     ]
 
 
 update : Action -> Model -> ( Model, Effects Action)
 update msg model =
   case msg of
-    PopulateAvailableSenators result ->
+    PopulateAvailableLegislators result ->
       case result of
-        Ok senators ->
-          ({ model | availableSenators = senators }
+        Ok legislators ->
+          ({ model | availableLegislators = legislators }
           , Effects.none)
         Err error ->
-          ({ model | availableSenators = [] }
+          ({ model | availableLegislators = [] }
           , Effects.none)
-    ToggleSenator destination senator ->
+    ToggleLegislator destination legislator ->
       let
-        senatorFilter currentSenator =
-          not (currentSenator.firstName == senator.firstName ) && not ( currentSenator.lastName == senator.lastName )
+        legislatorFilter currentLegislator =
+          not (currentLegislator.firstName == legislator.firstName ) && not ( currentLegislator.lastName == legislator.lastName )
       in
         case destination of
          Available ->
            ({ model
-              | availableSenators = senator :: model.availableSenators
-              , selectedSenators = (List.filter senatorFilter model.selectedSenators)}
+              | availableLegislators = legislator :: model.availableLegislators
+              , selectedLegislators = (List.filter legislatorFilter model.selectedLegislators)}
            , Effects.none)
          Selected ->
            ({ model
-              | selectedSenators = senator :: model.selectedSenators
-              , availableSenators = (List.filter senatorFilter model.availableSenators)}
+              | selectedLegislators = legislator :: model.selectedLegislators
+              , availableLegislators = (List.filter legislatorFilter model.availableLegislators)}
            , Effects.none)
 
 
 initialModel : Model
 initialModel =
-  { selectedSenators =
+  { selectedLegislators =
       [
        { firstName = "Juan"
        , lastName = "Caicedo"
@@ -114,31 +114,31 @@ initialModel =
        , lastName = "Banov"
        }
       ]
-  , availableSenators = []
+  , availableLegislators = []
   }
 
 
-getSenators :  Effects Action
-getSenators =
-  Http.get senatorsDecoder senatorsUrl
+getLegislators :  Effects Action
+getLegislators =
+  Http.get legislatorsDecoder legislatorsUrl
       |> Task.toResult
-      |> Task.map PopulateAvailableSenators
+      |> Task.map PopulateAvailableLegislators
       |> Effects.task
 
 
-type alias Senator = { firstName: String, lastName: String }
-senatorsDecoder : Json.Decoder (List Senator)
-senatorsDecoder =
-  let senator =
-    Json.object2 Senator
+type alias Legislator = { firstName: String, lastName: String }
+legislatorsDecoder : Json.Decoder (List Legislator)
+legislatorsDecoder =
+  let legislator =
+    Json.object2 Legislator
           ("first_name" := Json.string)
           ("last_name" := Json.string)
   in
-    "results" := Json.list senator
+    "results" := Json.list legislator
 
 
-senatorsUrl : String
-senatorsUrl =
+legislatorsUrl : String
+legislatorsUrl =
   Http.url "https://congress.api.sunlightfoundation.com/legislators"
       [ ("apikey", "d6ef0d61cbd241bc9d89109e4f70e128")
       , ("per_page", "all") ]
@@ -147,7 +147,7 @@ senatorsUrl =
 app: StartApp.App Model
 app =
   StartApp.start
-    { init = ( initialModel, getSenators )
+    { init = ( initialModel, getLegislators )
     , update = update
     , view = view
     , inputs = []

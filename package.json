@@ -1,11 +1,11 @@
 {
-  "name": "fantasy-senate",
+  "name": "fantasy-legislature",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "chokidar '*.elm' -c 'elm make app.elm --output app.js'"
+    "dev": "chokidar '*.elm' -c 'node_modules/.bin/elm make app.elm --output app.js'"
   },
   "author": "",
   "license": "ISC",
