@@ -5,14 +5,13 @@ import Html.Attributes exposing (..)
 import Http
 import StartApp
 import Json.Decode as Json exposing ((:=))
-import Effects exposing (Effects)
+import Effects exposing (Effects, Never)
 import Signal exposing (Address)
 import List
 import Task
 
 type Action
-  = GetSenators
-  | DisplaySenators (Maybe (List Senator))
+  = DisplaySenators (Result Http.Error (List Senator))
 
 
 type alias Model =
@@ -28,7 +27,7 @@ view action model =
          (List.map senatorListItem model.senators )
     ]
 
-
+senatorListItem : Senator -> Html
 senatorListItem senator =
   li [] [ text (senator.firstName ++ " " ++ senator.lastName) ]
 
@@ -36,17 +35,13 @@ senatorListItem senator =
 update : Action -> Model -> ( Model, Effects Action)
 update msg model =
   case msg of
-    GetSenators ->
-      ( model
-      , getSenators)
-    DisplaySenators maybe ->
-      case maybe of
-        Just senators ->
+    DisplaySenators result ->
+      case result of
+        Ok senators ->
           ({ model | senators = senators }
           , Effects.none)
-        Nothing ->
-          (model
-          , Effects.none)
+        Err error ->
+          ({ model | senators = [{firstName="error", lastName="error"}]}, Effects.none)
 
 initialModel : Model
 initialModel =
@@ -64,7 +59,7 @@ initialModel =
 getSenators :  Effects Action
 getSenators =
   Http.get senators senatorsUrl
-      |> Task.toMaybe
+      |> Task.toResult
       |> Task.map DisplaySenators
       |> Effects.task
 
@@ -73,9 +68,9 @@ type alias Senator = { firstName: String, lastName: String }
 senators : Json.Decoder (List Senator)
 senators =
   let senator =
-        Json.object2 Senator
-              ("first_name" := Json.string)
-              ("last_name" := Json.string)
+    Json.object2 Senator
+          ("first_name" := Json.string)
+          ("last_name" := Json.string)
   in
     "results" := Json.list senator
 
@@ -88,7 +83,7 @@ senatorsUrl =
 app: StartApp.App Model
 app =
   StartApp.start
-    { init = ( initialModel, Effects.none )
+    { init = ( initialModel, getSenators )
     , update = update
     , view = view
     , inputs = []
@@ -97,3 +92,8 @@ app =
 main : Signal Html
 main =
   app.html
+
+
+port runner : Signal (Task.Task Never ())
+port runner =
+  app.tasks
