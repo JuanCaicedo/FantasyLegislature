@@ -39,7 +39,8 @@ senatorsTable senators =
         ]
         [ tbody
             []
-            ( senatorsHeader :: (List.map senatorListItem senators ))
+            ( senatorsHeader :: (List.map senatorListItem senators) )
+
         ]
     ]
 
@@ -71,7 +72,14 @@ update msg model =
           ({ model | senators = senators }
           , Effects.none)
         Err error ->
-          ({ model | senators = [{firstName="error", lastName="error"}]}, Effects.none)
+          ({ model |
+               senators =
+                 [{ firstName = "error"
+                  , lastName = "error"
+                  }
+                 ]
+           }
+          , Effects.none)
 
 
 initialModel : Model
