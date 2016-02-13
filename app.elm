@@ -90,8 +90,14 @@ update msg model =
          Available senator ->
            ( model, Effects.none)
          Selected senator ->
-           ({ model | selectedSenators = senator :: model.selectedSenators }
-           , Effects.none)
+           let
+             senatorFilter currentSenator =
+               not (currentSenator.firstName == senator.firstName ) && not ( currentSenator.lastName == senator.lastName )
+           in
+             ({ model
+                | selectedSenators = senator :: model.selectedSenators
+                , availableSenators = (List.filter senatorFilter model.availableSenators)}
+             , Effects.none)
 
 
 initialModel : Model
