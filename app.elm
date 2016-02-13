@@ -14,12 +14,12 @@ import Task exposing (Task)
 
 type Action
   = PopulateAvailableSenators (Result Http.Error (List Senator))
-  | ToggleSenator (Destination)
+  | ToggleSenator Destination (Senator)
 
 
 type Destination
-  = Available (Senator)
-  | Selected (Senator)
+  = Available
+  | Selected
 
 type alias Model =
   { selectedSenators: List Senator
@@ -32,14 +32,14 @@ view address model =
   div
     [ class "container-fluid" ]
     [ div [ class "col-xs-6" ] [ h1 [] [ text "Your team" ]
-                               , senatorsTable address model.selectedSenators ]
+                               , senatorsTable address Available model.selectedSenators ]
     , div [ class "col-xs-6" ] [ h1 [] [ text "Available" ]
-                               , senatorsTable address model.availableSenators]
+                               , senatorsTable address Selected model.availableSenators]
     ]
 
 
-senatorsTable : Signal.Address Action -> (List Senator) -> Html
-senatorsTable address senators =
+senatorsTable : Signal.Address Action -> Destination -> (List Senator) -> Html
+senatorsTable address destination senators =
   div
     []
     [ table
@@ -51,7 +51,7 @@ senatorsTable address senators =
         ]
         [ tbody
             []
-            ( senatorsHeader :: (List.map (senatorListItem address) senators) )
+            ( senatorsHeader :: (List.map (senatorListItem address destination) senators) )
         ]
     ]
 
@@ -65,10 +65,10 @@ senatorsHeader =
     ]
 
 
-senatorListItem : Signal.Address Action -> Senator -> Html
-senatorListItem address senator =
+senatorListItem : Signal.Address Action -> Destination -> Senator -> Html
+senatorListItem address destination senator =
   tr
-    [ onClick address (ToggleSenator (Selected senator)) ]
+    [ onClick address (ToggleSenator (destination) (senator))]
     [ td [] [ text senator.firstName ]
     , td [] [ text senator.lastName ]
     ]
@@ -85,19 +85,22 @@ update msg model =
         Err error ->
           ({ model | availableSenators = [] }
           , Effects.none)
-    ToggleSenator destination ->
-       case destination of
-         Available senator ->
-           ( model, Effects.none)
-         Selected senator ->
-           let
-             senatorFilter currentSenator =
-               not (currentSenator.firstName == senator.firstName ) && not ( currentSenator.lastName == senator.lastName )
-           in
-             ({ model
-                | selectedSenators = senator :: model.selectedSenators
-                , availableSenators = (List.filter senatorFilter model.availableSenators)}
-             , Effects.none)
+    ToggleSenator destination senator ->
+      let
+        senatorFilter currentSenator =
+          not (currentSenator.firstName == senator.firstName ) && not ( currentSenator.lastName == senator.lastName )
+      in
+        case destination of
+         Available ->
+           ({ model
+              | availableSenators = senator :: model.availableSenators
+              , selectedSenators = (List.filter senatorFilter model.selectedSenators)}
+           , Effects.none)
+         Selected ->
+           ({ model
+              | selectedSenators = senator :: model.selectedSenators
+              , availableSenators = (List.filter senatorFilter model.availableSenators)}
+           , Effects.none)
 
 
 initialModel : Model
