@@ -23,13 +23,25 @@ view action model =
   div
     []
     [ h1 [] [ text "test" ]
-    , ul [ class "senators-list" ]
-         (List.map senatorListItem model.senators )
+    , table
+        [ classList
+            [ ("table", True)
+            , ("table-striped", True)
+            ]
+        ]
+        [ tbody
+            []
+            (List.map senatorListItem model.senators )
+        ]
     ]
 
 senatorListItem : Senator -> Html
 senatorListItem senator =
-  li [] [ text (senator.firstName ++ " " ++ senator.lastName) ]
+  tr
+    []
+    [ td [] [ text senator.firstName ]
+    , td [] [ text senator.lastName ]
+    ]
 
 
 update : Action -> Model -> ( Model, Effects Action)
