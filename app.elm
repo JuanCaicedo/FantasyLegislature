@@ -8,7 +8,7 @@ import Json.Decode as Json exposing ((:=))
 import Effects exposing (Effects, Never)
 import Signal exposing (Address)
 import List
-import Task
+import Task exposing (Task)
 
 type Action
   = DisplaySenators (Result Http.Error (List Senator))
@@ -106,6 +106,6 @@ main =
   app.html
 
 
-port runner : Signal (Task.Task Never ())
+port runner : Signal (Task Never ())
 port runner =
   app.tasks
